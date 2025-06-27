@@ -1,0 +1,104 @@
+#######################################
+# Syntax Coloring Map For RGBLED
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+RGB	KEYWORD1
+RGBLED	KEYWORD1
+Fader	KEYWORD1
+Transition	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+toRGB24	KEYWORD2
+toRGB16	KEYWORD2
+
+fade8	KEYWORD2
+sqGamma	KEYWORD2
+cubeGamma	KEYWORD2
+fadeTo	KEYWORD2
+fadeBlack	KEYWORD2
+makeRGB24	KEYWORD2
+makeRGB16	KEYWORD2
+
+setRGB	KEYWORD2
+setColor	KEYWORD2
+setRGB24	KEYWORD2
+setRGB16	KEYWORD2
+setRGB16Fast	KEYWORD2
+setRainbow	KEYWORD2
+setRainbow16	KEYWORD2
+setHue	KEYWORD2
+setHue16	KEYWORD2
+setKelvin	KEYWORD2
+setKelvinFast	KEYWORD2
+setHSV	KEYWORD2
+setHSVFast	KEYWORD2
+
+fromRGB	KEYWORD2
+setFrom	KEYWORD2
+fromColor	KEYWORD2
+fromRGB24	KEYWORD2
+fromRGB16	KEYWORD2
+fromRGB16Fast	KEYWORD2
+fromRainbow	KEYWORD2
+fromRainbow16	KEYWORD2
+fromHue	KEYWORD2
+fromHue16	KEYWORD2
+fromKelvin	KEYWORD2
+fromKelvinFast	KEYWORD2
+fromHSV	KEYWORD2
+fromHSVFast	KEYWORD2
+
+setBrightness	KEYWORD2
+show	KEYWORD2
+enable	KEYWORD2
+disable	KEYWORD2
+setPower	KEYWORD2
+
+tick	KEYWORD2
+running	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+COM_ANODE	LITERAL1
+COM_CATHODE	LITERAL1
+
+White	LITERAL1
+Gray	LITERAL1
+LightGray	LITERAL1
+DarkGray	LITERAL1
+Black	LITERAL1
+
+Red	LITERAL1
+Green	LITERAL1
+Blue	LITERAL1
+Yellow	LITERAL1
+Cyan	LITERAL1
+Magenta	LITERAL1
+Orange	LITERAL1
+Pink	LITERAL1
+Brown	LITERAL1
+Purple	LITERAL1
+Violet	LITERAL1
+Indigo	LITERAL1
+Teal	LITERAL1
+Navy	LITERAL1
+Lime	LITERAL1
+Olive	LITERAL1
+Maroon	LITERAL1
+Gold	LITERAL1
+Coral	LITERAL1
+Salmon	LITERAL1
+Khaki	LITERAL1
+Turquoise	LITERAL1
+SkyBlue	LITERAL1
+SteelBlue	LITERAL1
+Chocolate	LITERAL1
