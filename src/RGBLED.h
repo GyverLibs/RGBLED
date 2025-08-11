@@ -9,9 +9,6 @@ class RGBLED : public RGB {
     static const bool COM_CATHODE = false;
 
     RGBLED(uint8_t rpin, uint8_t gpin, uint8_t bpin, bool com = COM_CATHODE) : _rpin(rpin), _gpin(gpin), _bpin(bpin), _anode(com) {
-        pinMode(rpin, OUTPUT);
-        pinMode(gpin, OUTPUT);
-        pinMode(bpin, OUTPUT);
         disable();
     }
 
