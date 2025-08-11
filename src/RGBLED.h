@@ -35,6 +35,9 @@ class RGBLED : public RGB {
 
     // выкл
     void disable() {
+        pinMode(_rpin, OUTPUT);
+        pinMode(_gpin, OUTPUT);
+        pinMode(_bpin, OUTPUT);
         digitalWrite(_rpin, _anode);
         digitalWrite(_gpin, _anode);
         digitalWrite(_bpin, _anode);
