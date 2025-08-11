@@ -8,7 +8,12 @@ class RGBLED : public RGB {
     static const bool COM_ANODE = true;
     static const bool COM_CATHODE = false;
 
-    RGBLED(uint8_t rpin, uint8_t gpin, uint8_t bpin, bool com = COM_CATHODE) : _rpin(rpin), _gpin(gpin), _bpin(bpin), _anode(com) {}
+    RGBLED(uint8_t rpin, uint8_t gpin, uint8_t bpin, bool com = COM_CATHODE) : _rpin(rpin), _gpin(gpin), _bpin(bpin), _anode(com) {
+        pinMode(rpin, OUTPUT);
+        pinMode(gpin, OUTPUT);
+        pinMode(bpin, OUTPUT);
+        disable();
+    }
 
     void setRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t bright = 255) override {
         RGB::setRGB(r, g, b, bright);
@@ -35,9 +40,9 @@ class RGBLED : public RGB {
 
     // выкл
     void disable() {
-        digitalWrite(_rpin, _anode);
-        digitalWrite(_gpin, _anode);
-        digitalWrite(_bpin, _anode);
+        analogWrite(_rpin, _anode ? 255 : 0);
+        analogWrite(_gpin, _anode ? 255 : 0);
+        analogWrite(_bpin, _anode ? 255 : 0);
     }
 
     // вкл/выкл
