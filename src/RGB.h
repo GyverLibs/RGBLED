@@ -426,8 +426,7 @@ class RGB::Fader {
             steps >>= 1;
         }
 
-        steps = 1 << _n;
-        _prd = durationMs / steps;
+        _prd = durationMs / (1 << _n);
         return true;
     }
 
@@ -436,11 +435,12 @@ class RGB::Fader {
         if (!_prd || uint16_t(uint16_t(millis()) - _tmr) < _prd) return false;
         _tmr += _prd;
 
-        if (++_step == (1 << _n)) {
+        if (_step + 1 == (1 << _n)) {
             _prd = 0;
             _rgb.setFrom(_to);
             return true;
         }
+        ++_step;
 
         _rgb.setRGB(
             _from.R + ((((int32_t)_to.R - _from.R) * _step) >> _n),
