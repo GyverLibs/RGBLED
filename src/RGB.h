@@ -5,6 +5,9 @@
 struct RGB_t {
     uint8_t R = 0, G = 0, B = 0;
 };
+struct HSV_t {
+    uint8_t H = 0, S = 0, V = 0;
+};
 
 // =================== RGB ===================
 class RGB : public RGB_t {
@@ -50,26 +53,36 @@ class RGB : public RGB_t {
     // =================== STATIC ===================
 
     // уменьшить яркость
-    static inline constexpr uint8_t fade8(uint8_t x, uint8_t bright) {
+    static constexpr uint8_t fade8(uint8_t x, uint8_t bright) {
         return bright == 255 ? x : (uint16_t(x) * (bright + 1)) >> 8;
     }
 
     // квадратная гамма
-    static inline constexpr uint8_t sqGamma(uint8_t x) {
+    static constexpr uint8_t gamma2(uint8_t x) {
         return x == 255 ? x : (uint16_t(x + 1) * x) >> 8;
     }
 
     // кубическая гамма
-    static inline constexpr uint8_t cubeGamma(uint8_t x) {
+    static constexpr uint8_t gamma3(uint8_t x) {
         return x == 255 ? x : (uint32_t(x + 1) * (x + 1) * x) >> 16;
     }
 
-    static inline constexpr uint32_t makeRGB24(uint8_t r, uint8_t g, uint8_t b) {
+    static constexpr uint32_t makeRGB24(uint8_t r, uint8_t g, uint8_t b) {
         return (uint32_t(r) << 16) | (uint32_t(g) << 8) | b;
     }
 
-    static inline constexpr uint32_t makeRGB16(uint8_t r, uint8_t g, uint8_t b) {
+    static constexpr uint16_t makeRGB16(uint8_t r, uint8_t g, uint8_t b) {
         return ((r & 0b11111000) << 8) | ((g & 0b11111100) << 3) | ((b & 0b11111000) >> 3);
+    }
+
+    static constexpr uint8_t diff(uint8_t a, uint8_t b) {
+        return a > b ? a - b : b - a;
+    }
+    static constexpr uint8_t max3(uint8_t a, uint8_t b, uint8_t c) {
+        return (a > b) ? ((a > c) ? a : c) : ((b > c) ? b : c);
+    }
+    static constexpr uint8_t min3(uint8_t a, uint8_t b, uint8_t c) {
+        return (a < b) ? ((a < c) ? a : c) : ((b < c) ? b : c);
     }
 
     // =================== GETTER ===================
@@ -84,6 +97,43 @@ class RGB : public RGB_t {
         return makeRGB16(R, G, B);
     }
 
+    // вывести как HSV
+    HSV_t toHSV() {
+        uint8_t mx = max3(R, G, B);
+        uint8_t mn = min3(R, G, B);
+        uint8_t delta = mx - mn;
+
+        HSV_t hsv;
+        hsv.V = mx;
+
+        if (delta == 0) {
+            hsv.H = 0;
+            hsv.S = 0;
+            return hsv;
+        }
+
+        hsv.S = (uint16_t(delta) * 255) / mx;
+
+        int16_t h;
+
+        if (mx == R) {
+            h = 43 * (int16_t(G) - int16_t(B)) / delta;
+        } else if (mx == G) {
+            h = 85 + 43 * (int16_t(B) - int16_t(R)) / delta;
+        } else {
+            h = 171 + 43 * (int16_t(R) - int16_t(G)) / delta;
+        }
+
+        if (h < 0) {
+            h += 256;
+        } else if (h > 255) {
+            h -= 256;
+        }
+
+        hsv.H = h;
+        return hsv;
+    }
+
     // =================== UTIL ===================
 
     // плавно изменить цвет к to за durationMs мс
@@ -92,7 +142,7 @@ class RGB : public RGB_t {
     // понизить яркость (чем меньше значение, тем ниже яркость)
     void fadeBlack(uint8_t bright) {
         if (bright == 255) return;
-        bright = sqGamma(bright);
+        bright = gamma2(bright);
         R = fade8(R, bright);
         G = fade8(G, bright);
         B = fade8(B, bright);
@@ -109,7 +159,7 @@ class RGB : public RGB_t {
     }
 
     // RGB
-    void setFrom(const RGB_t& rgb, uint8_t bright = 255) {
+    void setRGB(const RGB_t& rgb, uint8_t bright = 255) {
         setRGB(rgb.R, rgb.G, rgb.B, bright);
     }
 
@@ -240,6 +290,9 @@ class RGB : public RGB_t {
     }
 
     // HSV
+    void setHSV(const HSV_t& hsv) {
+        setHSV(hsv.H, hsv.S, hsv.V);
+    }
     void setHSV(uint8_t h, uint8_t s, uint8_t v) {
         float H = h / 255.0;
         float S = s / 255.0;
@@ -262,6 +315,9 @@ class RGB : public RGB_t {
     }
 
     // HSV, быстрый алгоритм
+    void setHSVFast(const HSV_t& hsv) {
+        setHSVFast(hsv.H, hsv.S, hsv.V);
+    }
     void setHSVFast(uint8_t h, uint8_t s, uint8_t v) {
         uint16_t h2 = h * 24 / 17;
         uint8_t vs = uint32_t(v) * s / 255;
@@ -279,6 +335,9 @@ class RGB : public RGB_t {
 
     // ================== FABRIC ==================
 
+    static RGB fromRGB(const RGB_t& rgb, uint8_t bright = 255) {
+        return fromRGB(rgb.R, rgb.G, rgb.B, bright);
+    }
     static RGB fromRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t bright = 255) {
         RGB rgb;
         rgb.setRGB(r, g, b, bright);
@@ -339,11 +398,22 @@ class RGB : public RGB_t {
         rgb.setHSV(h, s, v);
         return rgb;
     }
+    static RGB fromHSV(const HSV_t& hsv) {
+        return fromHSV(hsv.H, hsv.S, hsv.V);
+    }
     static RGB fromHSVFast(uint8_t h, uint8_t s, uint8_t v) {
         RGB rgb;
         rgb.setHSVFast(h, s, v);
         return rgb;
     }
+    static RGB fromHSVFast(const HSV_t& hsv) {
+        return fromHSVFast(hsv.H, hsv.S, hsv.V);
+    }
+
+    // ========================================
+    static constexpr uint8_t sqGamma(uint8_t x) { return gamma2(x); }
+    static constexpr uint8_t cubeGamma(uint8_t x) { return gamma3(x); }
+    void setFrom(const RGB_t& rgb, uint8_t bright = 255) { setRGB(rgb, bright); }
 
    private:
     template <typename T, typename Tn, uint8_t bits>
@@ -402,11 +472,11 @@ class RGB::Fader {
     // плавно изменить цвет к to за durationMs мс
     bool fadeTo(const RGB& to, uint16_t durationMs) {
         if (!durationMs) {
-            _rgb.setFrom(to);
+            _rgb.setRGB(to);
             return false;
         }
 
-        uint8_t steps = _max3(_dif(_rgb.R, to.R), _dif(_rgb.G, to.G), _dif(_rgb.B, to.B));
+        uint8_t steps = RGB::max3(RGB::diff(_rgb.R, to.R), RGB::diff(_rgb.G, to.G), RGB::diff(_rgb.B, to.B));
         if (!steps) return false;
 
         _tmr = millis();
@@ -437,7 +507,7 @@ class RGB::Fader {
 
         if (_step + 1 == (1 << _n)) {
             _prd = 0;
-            _rgb.setFrom(_to);
+            _rgb.setRGB(_to);
             return true;
         }
         ++_step;
@@ -460,11 +530,4 @@ class RGB::Fader {
     uint16_t _tmr, _prd = 0;
     uint8_t _n, _step = 0;
     RGB_t _from, _to;
-
-    uint8_t _dif(uint8_t a, uint8_t b) {
-        return a > b ? a - b : b - a;
-    }
-    uint8_t _max3(uint8_t a, uint8_t b, uint8_t c) {
-        return (a > b) ? ((a > c) ? a : c) : ((b > c) ? b : c);
-    }
 };

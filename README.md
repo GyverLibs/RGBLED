@@ -35,10 +35,10 @@
 static uint8_t fade8(uint8_t x, uint8_t bright);
 
 // квадратная гамма
-static uint8_t sqGamma(uint8_t x);
+static uint8_t gamma2(uint8_t x);
 
 // кубическая гамма
-static uint8_t cubeGamma(uint8_t x);
+static uint8_t gamma3(uint8_t x);
 
 static uint32_t makeRGB24(uint8_t r, uint8_t g, uint8_t b);
 
@@ -51,6 +51,9 @@ uint32_t toRGB24();
 
 // вывести как 16-бит RGB
 uint16_t toRGB16();
+
+// вывести как HSV
+HSV_t toHSV();
 
 // =================== UTIL ===================
 
@@ -66,7 +69,7 @@ void fadeBlack(uint8_t bright);
 virtual void setRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t bright = 255);
 
 // RGB
-void setFrom(const RGB_t& rgb, uint8_t bright = 255);
+void setRGB(const RGB_t& rgb, uint8_t bright = 255);
 
 // RGB::Color
 void setColor(Color color, uint8_t bright = 255);
