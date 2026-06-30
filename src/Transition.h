@@ -1,19 +1,23 @@
 #pragma once
 #include <Arduino.h>
 
+#ifndef TRANSM_MIN_PRD
 #define TRANSM_MIN_PRD 20
+#endif
 
 class Transition {
    public:
     // начать переход
     bool start(uint8_t from, uint8_t to, uint16_t durationMs) {
+        _prd = 0;
+        _cur = from;
+        _tar = to;
+
         if (!durationMs) {
             _cur = to;
             return false;
         }
 
-        _cur = from;
-        _tar = to;
         uint8_t d = from > to ? from - to : to - from;
         if (!d) return false;
 

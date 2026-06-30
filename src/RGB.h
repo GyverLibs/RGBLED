@@ -72,7 +72,7 @@ class RGB : public RGB_t {
     }
 
     static constexpr uint16_t makeRGB16(uint8_t r, uint8_t g, uint8_t b) {
-        return ((r & 0b11111000) << 8) | ((g & 0b11111100) << 3) | ((b & 0b11111000) >> 3);
+        return (uint16_t(r & 0b11111000) << 8) | (uint16_t(g & 0b11111100) << 3) | ((b & 0b11111000) >> 3);
     }
 
     static constexpr uint8_t diff(uint8_t a, uint8_t b) {
@@ -171,9 +171,9 @@ class RGB : public RGB_t {
     // RGB888
     void setRGB24(uint32_t col, uint8_t bright = 255) {
         setRGB(
-            ((uint8_t*)&col)[2],
-            ((uint8_t*)&col)[1],
-            ((uint8_t*)&col)[0],
+            col >> 16,
+            col >> 8,
+            col,
             bright);
     }
 
@@ -463,7 +463,9 @@ class RGB : public RGB_t {
 
 // ===================== FADER =====================
 
+#ifndef FADER_MIN_PRD
 #define FADER_MIN_PRD 20
+#endif
 
 class RGB::Fader {
    public:
@@ -471,6 +473,7 @@ class RGB::Fader {
 
     // плавно изменить цвет к to за durationMs мс
     bool fadeTo(const RGB& to, uint16_t durationMs) {
+        _prd = 0;
         if (!durationMs) {
             _rgb.setRGB(to);
             return false;
