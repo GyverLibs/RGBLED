@@ -17,14 +17,14 @@ void setup() {
     rgb.setRGB24(0xaabb22);  // установить как RGB888 HEX
     delay(1000);
 
-    rgb.setColor(RGB::Color::Blue);  // установить из списка
+    rgb.setColor(RGBColor::Blue);  // установить из списка
     delay(1000);
 
     // плавно привести к красному за 2 секунды (синхронно, блокирующий вызов)
-    rgb.fadeTo(RGB::fromRGB(50, 0, 0), 2000);
+    rgb.fadeTo(RGBColor::fromRGB(50, 0, 0), 2000);
 
     // плавно привести к розовому за 2 секунды (синхронно, блокирующий вызов)
-    rgb.fadeTo(RGB::fromColor(RGB::Color::Pink), 1000);
+    rgb.fadeTo(RGBColor::fromColor(RGBColor::Pink), 1000);
 }
 
 void loop() {

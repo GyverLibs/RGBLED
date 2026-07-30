@@ -1,54 +1,62 @@
 #pragma once
 #include <Arduino.h>
 
-#include "RGB.h"
+#include "RGBReact.h"
 
-class RGBLED : public RGB {
+class RGBLED : public RGBReact {
    public:
-    static const bool COM_ANODE = true;
-    static const bool COM_CATHODE = false;
+    enum conn_t {
+        COM_CATHODE,
+        COM_ANODE,
+    };
 
-    RGBLED(uint8_t rpin, uint8_t gpin, uint8_t bpin, bool com = COM_CATHODE) : _rpin(rpin), _gpin(gpin), _bpin(bpin), _anode(com) {
-        disable();
-    }
-
-    void setRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t bright = 255) override {
-        RGB::setRGB(r, g, b, bright);
-        show();
-    }
+    RGBLED(uint8_t rpin, uint8_t gpin, uint8_t bpin, conn_t com = COM_CATHODE)
+        : _rpin(rpin), _gpin(gpin), _bpin(bpin), _anode(com == COM_ANODE) {}
 
     // установить и применить яркость
-    void setBrightness(uint8_t bright) {
-        _bright = sqGamma(bright);
+    void setBrightness(uint8_t bright, bool withGamma = true) {
+        _bright = withGamma ? RGBMath::gamma2(bright) : bright;
         show();
     }
 
-    // обновить цвет
-    void show() {
-        analogWrite(_rpin, _anode ? 255 - RGB::fade8(R, _bright) : RGB::fade8(R, _bright));
-        analogWrite(_gpin, _anode ? 255 - RGB::fade8(G, _bright) : RGB::fade8(G, _bright));
-        analogWrite(_bpin, _anode ? 255 - RGB::fade8(B, _bright) : RGB::fade8(B, _bright));
-    }
-
-    // вкл
-    inline void enable() {
+    // включить и применить сохранённый цвет
+    void enable() {
+        _enabled = true;
         show();
     }
 
-    // выкл
     void disable() {
-        analogWrite(_rpin, _anode ? 255 : 0);
-        analogWrite(_gpin, _anode ? 255 : 0);
-        analogWrite(_bpin, _anode ? 255 : 0);
+        _enabled = false;
+        _write(_rpin, 0);
+        _write(_gpin, 0);
+        _write(_bpin, 0);
     }
 
-    // вкл/выкл
     void setPower(bool power) {
         power ? enable() : disable();
     }
 
+    bool enabled() const {
+        return _enabled;
+    }
+
    private:
-    const uint8_t _rpin, _gpin, _bpin;
+    void show() override {
+        if (!_enabled) return;
+        _write(_rpin, RGBMath::fade8(_color.R, _bright));
+        _write(_gpin, RGBMath::fade8(_color.G, _bright));
+        _write(_bpin, RGBMath::fade8(_color.B, _bright));
+    }
+
+    void _write(uint8_t pin, uint8_t value) {
+        analogWrite(pin, _anode ? 255 - value : value);
+    }
+
+    const uint8_t _rpin;
+    const uint8_t _gpin;
+    const uint8_t _bpin;
     const bool _anode;
+
     uint8_t _bright = 255;
+    bool _enabled = true;
 };

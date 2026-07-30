@@ -26,200 +26,281 @@
 <a id="usage"></a>
 
 ## Использование
-### RGB
-Базовый класс с конвертацией и установкой цветов
+Библиотека разделена на два уровня:
+
+- `RGBColor` и `HSVColor` — хранение и преобразование цвета без привязки к устройству
+- `RGBReact` — базовый реактивный класс, который хранит текущий `RGBColor` и применяет его в наследнике
+- `RGBLED` — драйвер физического RGB-светодиода
+- `RGBFader` и `Transition` — асинхронные плавные переходы
+
+### HSVColor
+Класс хранения HSV-цвета:
+
 ```cpp
-// =================== STATIC ===================
+HSVColor();
+HSVColor(uint8_t h, uint8_t s, uint8_t v);
 
-// уменьшить яркость
-static uint8_t fade8(uint8_t x, uint8_t bright);
+uint8_t H;
+uint8_t S;
+uint8_t V;
 
-// квадратная гамма
-static uint8_t gamma2(uint8_t x);
+// преобразование в RGB
+RGBColor toRGB() const;
+RGBColor toRGBFast() const;
+```
 
-// кубическая гамма
-static uint8_t gamma3(uint8_t x);
+### RGBColor
+Класс хранения и преобразования RGB-цвета
 
-static uint32_t makeRGB24(uint8_t r, uint8_t g, uint8_t b);
+```cpp
+RGBColor();
+RGBColor(uint8_t r, uint8_t g, uint8_t b);
 
-static uint32_t makeRGB16(uint8_t r, uint8_t g, uint8_t b);
+uint8_t R;
+uint8_t G;
+uint8_t B;
+```
 
-// =================== GETTER ===================
+#### Расстояние между цветами
+```cpp
+// квадрат расстояния по RGB
+static uint32_t distRGB2(const RGBColor& c1, const RGBColor& c2);
 
-// вывести как 24-бит RGB
-uint32_t toRGB24();
+// точное расстояние по RGB
+static uint16_t distRGB(const RGBColor& c1, const RGBColor& c2);
 
-// вывести как 16-бит RGB
-uint16_t toRGB16();
+// приближённое расстояние по RGB
+static uint16_t distRGBFast(const RGBColor& c1, const RGBColor& c2);
 
-// вывести как HSV
-HSV_t toHSV();
+// круговая разница оттенков
+static uint8_t distHue(const RGBColor& c1, const RGBColor& c2);
+```
 
-// =================== UTIL ===================
+#### Получение значения
+```cpp
+uint32_t toRGB24() const;
+uint16_t toRGB16() const;
+HSVColor toHSV() const;
+```
 
-// плавно изменить цвет к to за durationMs мс
-void fadeTo(const RGB& to, uint16_t durationMs);
+#### Изменение цвета
+Параметр `bright` изменяет компоненты самого `RGBColor`
 
-// понизить яркость (чем меньше значение, тем ниже яркость)
+```cpp
+// уменьшить яркость текущего цвета
 void fadeBlack(uint8_t bright);
 
-// =================== SETTER ===================
-
 // RGB888
-virtual void setRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t bright = 255);
+void setRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t bright = 255);
+void setRGB(const RGBColor& rgb, uint8_t bright = 255);
 
-// RGB
-void setRGB(const RGB_t& rgb, uint8_t bright = 255);
+// предустановленный цвет
+void setColor(RGBColor::Color color, uint8_t bright = 255);
 
-// RGB::Color
-void setColor(Color color, uint8_t bright = 255);
-
-// RGB888
+// RGB888 HEX и RGB565
 void setRGB24(uint32_t col, uint8_t bright = 255);
-
-// RGB565 полная конвертация (медленнее)
 void setRGB16(uint16_t col, uint8_t bright = 255);
-
-// RGB565 быстрая конвертация с потерей точности
 void setRGB16Fast(uint16_t col, uint8_t bright = 255);
 
-// радуга 8 бит (более красивая версия setHue)
+// радуга и цветовое колесо
 void setRainbow(uint8_t col, uint8_t bright = 255);
-
-// радуга 16 бит (реальный шаг - 100 единиц)
 void setRainbow16(uint16_t col, uint8_t bright = 255);
-
-// цветовое колесо 8 бит
 void setHue(uint8_t col, uint8_t bright = 255);
-
-// цветовое колесо 16 бит (реальный шаг - 43 единицы)
 void setHue16(uint16_t col, uint8_t bright = 255);
 
-// цветовая температура 1000-10000К
+// цветовая температура
 void setKelvin(uint16_t K, uint8_t bright = 255);
-
-// цветовая температура 1000-10000К, быстрый алгоритм
 void setKelvinFast(uint16_t K, uint8_t bright = 255);
 
 // HSV
+void setHSV(const HSVColor& hsv);
 void setHSV(uint8_t h, uint8_t s, uint8_t v);
-
-// HSV, быстрый алгоритм
+void setHSVFast(const HSVColor& hsv);
 void setHSVFast(uint8_t h, uint8_t s, uint8_t v);
-
-// ================== FABRIC ==================
-
-static RGB fromRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t bright = 255);
-static RGB fromColor(Color color, uint8_t bright = 255);
-static RGB fromRGB24(uint32_t col, uint8_t bright = 255);
-static RGB fromRGB16(uint16_t col, uint8_t bright = 255);
-static RGB fromRGB16Fast(uint16_t col, uint8_t bright = 255);
-static RGB fromRainbow(uint8_t col, uint8_t bright = 255);
-static RGB fromRainbow16(uint16_t col, uint8_t bright = 255);
-static RGB fromHue(uint8_t col, uint8_t bright = 255);
-static RGB fromHue16(uint16_t col, uint8_t bright = 255);
-static RGB fromKelvin(uint16_t K, uint8_t bright = 255);
-static RGB fromKelvinFast(uint16_t K, uint8_t bright = 255);
-static RGB fromHSV(uint8_t h, uint8_t s, uint8_t v);
-static RGB fromHSVFast(uint8_t h, uint8_t s, uint8_t v);
 ```
 
-### RGB::Color
-Набор предустановленных цветов
-
+#### Фабрики
 ```cpp
-White = 0xFFFFFF,
-Gray = 0x808080,
-LightGray = 0xD3D3D3,
-DarkGray = 0xA9A9A9,
-Black = 0x000000,
-Red = 0xFF0000,
-Green = 0x00FF00,
-Blue = 0x0000FF,
-Yellow = 0xFFFF00,
-Cyan = 0x00FFFF,
-Magenta = 0xFF00FF,
-Orange = 0xFFA500,
-Pink = 0xFFC0CB,
-Brown = 0xA52A2A,
-Purple = 0x800080,
-Violet = 0xEE82EE,
-Indigo = 0x4B0082,
-Teal = 0x008080,
-Navy = 0x000080,
-Lime = 0x32CD32,
-Olive = 0x808000,
-Maroon = 0x800000,
-Gold = 0xFFD700,
-Coral = 0xFF7F50,
-Salmon = 0xFA8072,
-Khaki = 0xF0E68C,
-Turquoise = 0x40E0D0,
-SkyBlue = 0x87CEEB,
-SteelBlue = 0x4682B4,
-Chocolate = 0xD2691E
+static RGBColor fromRGB(uint8_t r, uint8_t g, uint8_t b, uint8_t bright = 255);
+static RGBColor fromColor(RGBColor::Color color, uint8_t bright = 255);
+static RGBColor fromRGB24(uint32_t col, uint8_t bright = 255);
+static RGBColor fromRGB16(uint16_t col, uint8_t bright = 255);
+static RGBColor fromRGB16Fast(uint16_t col, uint8_t bright = 255);
+static RGBColor fromRainbow(uint8_t col, uint8_t bright = 255);
+static RGBColor fromRainbow16(uint16_t col, uint8_t bright = 255);
+static RGBColor fromHue(uint8_t col, uint8_t bright = 255);
+static RGBColor fromHue16(uint16_t col, uint8_t bright = 255);
+static RGBColor fromKelvin(uint16_t K, uint8_t bright = 255);
+static RGBColor fromKelvinFast(uint16_t K, uint8_t bright = 255);
+static RGBColor fromHSV(uint8_t h, uint8_t s, uint8_t v);
+static RGBColor fromHSV(const HSVColor& hsv);
+static RGBColor fromHSVFast(uint8_t h, uint8_t s, uint8_t v);
+static RGBColor fromHSVFast(const HSVColor& hsv);
 ```
 
-### RGB::Fader
-Асинхронный фейдер (плавный переход между цветами)
+### RGBColor::Color
+```cpp
+RGBColor color = RGBColor::fromColor(RGBColor::Red);
+```
+
+Доступные значения:
 
 ```cpp
-Fader(RGB& rgb);
+RGBColor::White
+RGBColor::Gray
+RGBColor::LightGray
+RGBColor::DarkGray
+RGBColor::Black
+RGBColor::Red
+RGBColor::Green
+RGBColor::Blue
+RGBColor::Yellow
+RGBColor::Cyan
+RGBColor::Magenta
+RGBColor::Orange
+RGBColor::Pink
+RGBColor::Brown
+RGBColor::Purple
+RGBColor::Violet
+RGBColor::Indigo
+RGBColor::Teal
+RGBColor::Navy
+RGBColor::Lime
+RGBColor::Olive
+RGBColor::Maroon
+RGBColor::Gold
+RGBColor::Coral
+RGBColor::Salmon
+RGBColor::Khaki
+RGBColor::Turquoise
+RGBColor::SkyBlue
+RGBColor::SteelBlue
+RGBColor::Chocolate
+```
 
-// плавно изменить цвет к to за durationMs мс
-bool fadeTo(const RGB& to, uint16_t durationMs);
+### RGBReact
+Базовый класс для реактивных RGB-устройств. Хранит текущий `RGBColor`; все setter-ы применяют новый цвет через реализацию `show()` в наследнике.
 
-// вызывать в loop. Вернёт true при окончании процесса
+```cpp
+// текущий сохранённый цвет
+const RGBColor& color() const;
+
+// преобразование текущего цвета
+uint32_t toRGB24() const;
+uint16_t toRGB16() const;
+HSVColor toHSV() const;
+
+// синхронный блокирующий переход
+void fadeTo(const RGBColor& to, uint16_t durationMs);
+
+// изменить сохранённый цвет
+void fadeBlack(uint8_t bright);
+void setColor(const RGBColor& color);
+void setColor(RGBColor::Color color);
+void setRGB(uint8_t r, uint8_t g, uint8_t b);
+void setRGB24(uint32_t col);
+void setRGB16(uint16_t col);
+void setRGB16Fast(uint16_t col);
+void setRainbow(uint8_t col);
+void setRainbow16(uint16_t col);
+void setHue(uint8_t col);
+void setHue16(uint16_t col);
+void setKelvin(uint16_t K);
+void setKelvinFast(uint16_t K);
+void setHSV(const HSVColor& hsv);
+void setHSV(uint8_t h, uint8_t s, uint8_t v);
+void setHSVFast(const HSVColor& hsv);
+void setHSVFast(uint8_t h, uint8_t s, uint8_t v);
+```
+
+Setter-ы `RGBReact` не принимают яркость. Для `RGBLED` общая яркость регулируется отдельно через `setBrightness()` и не изменяет сохранённый `color()`.
+
+
+### RGBLED
+Класс управления физическим RGB-светодиодом, наследует `RGBReact`.
+
+```cpp
+RGBLED(
+    uint8_t rpin,
+    uint8_t gpin,
+    uint8_t bpin,
+    conn_t com = COM_CATHODE
+);
+
+// установить общую яркость физического выхода
+// withGamma = true включает квадратную гамму
+void setBrightness(uint8_t bright, bool withGamma = true);
+
+// включить и применить сохранённый цвет
+void enable();
+
+// выключить светодиод, сохранив цвет
+void disable();
+
+// включить или выключить
+void setPower(bool power);
+
+// светодиод включён
+bool enabled() const;
+```
+
+Общая яркость `RGBLED` применяется поверх сохранённого цвета и не изменяет его:
+
+```cpp
+led.setRGB(255, 80, 20);
+led.setBrightness(128);
+
+const RGBColor& saved = led.color();  // по-прежнему 255, 80, 20
+```
+
+### RGBFader
+Асинхронный плавный переход между цветами реактивного объекта:
+
+```cpp
+RGBFader(RGBReact& rgb);
+
+// начать переход к цвету за durationMs мс
+bool fadeTo(const RGBColor& to, uint16_t durationMs);
+
+// вызывать в loop, вернёт true при окончании процесса
 bool tick();
 
-// цвет в процессе изменения
-bool running();
+// переход выполняется
+bool running() const;
 ```
 
 ### Transition
-"Одноосевой" 8 бит фейдер
+Асинхронный одноосевой 8-битный переход:
 
 ```cpp
 // начать переход
 bool start(uint8_t from, uint8_t to, uint16_t durationMs);
 
-// вызывать в loop. Вернёт true на каждом шаге, если запущен
+// вызывать в loop, вернёт true на каждом выполненном шаге
 bool tick();
 
-// получить текущее значение
-uint8_t getCurrent();
+// получить текущее и целевое значение
+uint8_t getCurrent() const;
+uint8_t getTarget() const;
 
-// получить целевое значение
-uint8_t getTarget();
-
-// в процессе изменения
-bool running();
-```
-
-### RGBLED
-Класс для управления физическим светодиодом, наследует `RGB`
-
-```cpp
-RGBLED(uint8_t rpin, uint8_t gpin, uint8_t bpin, bool com = COM_CATHODE);
-
-// установить и применить яркость
-void setBrightness(uint8_t bright);
-
-// обновить цвет
-void show();
-
-// вкл
-void enable();
-
-// выкл
-void disable();
-
-// вкл/выкл
-void setPower(bool power);
+// переход выполняется
+bool running() const;
 ```
 
 ## Примеры
-### Демо
+### Работа с цветом
+```cpp
+#include <RGBColor.h>
+
+RGBColor color(255, 100, 20);
+HSVColor hsv = color.toHSV();
+
+RGBColor red = RGBColor::fromColor(RGBColor::Red);
+RGBColor wheel = RGBColor::fromHue(80);
+RGBColor warm = RGBColor::fromKelvin(3200);
+```
+
+### Управление светодиодом
 ```cpp
 #include <RGBLED.h>
 
@@ -240,34 +321,37 @@ void setup() {
     rgb.setRGB24(0xaabb22);  // установить как RGB888 HEX
     delay(1000);
 
-    rgb.setColor(RGB::Color::Blue);  // установить из списка
+    rgb.setColor(RGBColor::Blue);  // установить из списка
     delay(1000);
 
     // плавно привести к красному за 2 секунды (синхронно, блокирующий вызов)
-    rgb.fadeTo(RGB::fromRGB(50, 0, 0), 2000);
+    rgb.fadeTo(RGBColor::fromRGB(50, 0, 0), 2000);
 
     // плавно привести к розовому за 2 секунды (синхронно, блокирующий вызов)
-    rgb.fadeTo(RGB::fromColor(RGB::Color::Pink), 1000);
+    rgb.fadeTo(RGBColor::fromColor(RGBColor::Pink), 1000);
 }
 
 void loop() {
 }
 ```
 
-### Фейдер
+### Асинхронный фейдер
 ```cpp
 #include <RGBLED.h>
 
-RGBLED rgb(3, 5, 6);
-RGB::Fader f(rgb);
+RGBLED led(3, 5, 6);
+RGBFader fader(led);
 
 void setup() {
 }
 
 void loop() {
-    // асинхронно переходить на случайный цвет из Hue, когда предыдущий переход закончился
-    if (!f.running()) f.fadeTo(RGB::fromHue(random(0, 256)), 1000);
-    f.tick();
+    // начать новый переход после завершения предыдущего
+    if (!fader.running()) {
+        fader.fadeTo(RGBColor::fromHue(random(0, 256)), 1000);
+    }
+
+    fader.tick();
 }
 ```
 
